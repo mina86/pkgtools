@@ -160,9 +160,8 @@ ERRCODE=0
 
 # Main processing loop:
 for ARG; do
-
-  OLD=$(echo "$ARG" | cut -f 1 -d '%')
-  NEW=$(echo "$ARG" | cut -f 2 -d '%')
+  OLD=${ARG%'%'*}  # first segment, = $ARG if no %
+  NEW=${ARG#*'%'}  # second segment, = $ARG if no %
 
   # Simple package integrity check:
   if ! [ -f "$NEW" ]; then
@@ -174,8 +173,8 @@ for ARG; do
   # Figure out the names of the old and new packages:
   INCOMINGDIR=$(dirname $NEW)
   # These are the package names with the extension:
-  NNAME=$(basename $NEW)
-  ONAME=$(basename $OLD)
+  NNAME=${NEW##*/}
+  ONAME=${OLD##*/}
   # These are the package names without the extension:
   OLD=$(pkgbase $OLD)
   NEW=$(pkgbase $NEW)
@@ -193,7 +192,7 @@ for ARG; do
     if ls $ROOT/var/log/packages/$SHORT* 1> /dev/null 2> /dev/null ; then
       for installed_package in $ROOT/var/log/packages/$SHORT* ; do
         if [ "$(package_name $installed_package)" = "$SHORT" ]; then # found one
-          OLD="$(basename $installed_package)"
+          OLD="${installed_package##*/}"
           break
         fi
       done
