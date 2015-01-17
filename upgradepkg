@@ -37,7 +37,9 @@
 # valid package extensions.
 #
 # Sat 17 Jan 16:21:32 UTC 2015  mina86
-# pkgbase and package_name optimised.
+# Various optimisation mostly resolving around avoiding having to fork
+# and call cut, basename and other helper commands.  Slight
+# refactoring of code calling removepkg.
 
 # Return a package name that has been stripped of the dirname portion
 # and any of the valid extensions (only):
@@ -91,6 +93,8 @@ umask 022
 # $ROOT defined?
 if [ -d "$ROOT" ]; then
   export ROOT
+else
+  unset ROOT
 fi
 
 # --help or no args?
@@ -317,27 +321,13 @@ EOF
   fi
 
   # Now, the leftovers from the old package(s) can go.  Pretty simple, huh? :)
-  if [ -d "$ROOT" ]; then
-    ( cd $ROOT/var/log/packages
-      for rempkg in *-$TIMESTAMP ; do
-        if [ "$VERBOSE" = "verbose" ]; then
-          ROOT=$ROOT /sbin/removepkg $rempkg
-        else
-          ROOT=$ROOT /sbin/removepkg $rempkg | grep -v "Skipping\." | grep -v "Removing files:"
-        fi
-      done
-    )
-  else
-    ( cd /var/log/packages
-      for rempkg in *-$TIMESTAMP ; do
-        if [ "$VERBOSE" = "verbose" ]; then
-          /sbin/removepkg $rempkg
-        else
-          /sbin/removepkg $rempkg | grep -v "Skipping\." | grep -v "Removing files:"
-        fi
-      done
-    )
-  fi
+  for rempkg in "$ROOT/var/log/packages/"*"-$TIMESTAMP"; do
+    if [ "$VERBOSE" = "verbose" ]; then
+      /sbin/removepkg "${rempkg##*/}"
+    else
+      /sbin/removepkg "${rempkg##*/}" | grep -v 'Skipping\.\|Removing files:'
+    fi
+  done
   echo
 
   # Again!  Again!
