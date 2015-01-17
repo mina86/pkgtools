@@ -161,16 +161,17 @@ ERRCODE=0
 # Main processing loop:
 for ARG; do
 
+  OLD=$(echo "$ARG" | cut -f 1 -d '%')
+  NEW=$(echo "$ARG" | cut -f 2 -d '%')
+
   # Simple package integrity check:
-  if [ ! -f $(echo "$ARG" | cut -f 2 -d '%') ]; then
+  if ! [ -f "$NEW" ]; then
     ERRCODE=4
     echo "Cannot install $ARG:  file not found"
     continue;
   fi
 
   # Figure out the names of the old and new packages:
-  OLD=$(echo "$ARG" | cut -f 1 -d '%')
-  NEW=$(echo "$ARG" | cut -f 2 -d '%')
   INCOMINGDIR=$(dirname $NEW)
   # These are the package names with the extension:
   NNAME=$(basename $NEW)
