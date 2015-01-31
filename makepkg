@@ -2,6 +2,7 @@
 # Copyright 1994, 1998, 2008  Patrick Volkerding, Moorhead, Minnesota USA 
 # Copyright 2003  Slackware Linux, Inc.  Concord, CA USA
 # Copyright 2009  Patrick J. Volkerding, Sebeka, MN, USA
+# Copyright 2015  Michal Nazarewicz <mina86@mina86.com>
 # All rights reserved.
 #
 # Redistribution and use of this script, with or without modification, is
@@ -124,33 +125,24 @@ done
 
 PACKAGE_NAME="$1"
 TARGET_NAME="$(dirname $PACKAGE_NAME)"
-PACKAGE_NAME="$(basename $PACKAGE_NAME)"
+PACKAGE_NAME="${PACKAGE_NAME##*/}"
 
 # Identify package extension:
-if [ ! "$(basename $PACKAGE_NAME .tgz)" = "$PACKAGE_NAME" ]; then
-  EXTENSION="tgz"
-elif [ ! "$(basename $PACKAGE_NAME .tar.gz)" = "$PACKAGE_NAME" ]; then
-  # .tar.compression is also supported, although the resulting "packages" will
-  # not be installable by installpkg without the correct 3 letter extension
-  # instead.
-  EXTENSION="tar.gz"
-elif [ ! "$(basename $PACKAGE_NAME .tbz)" = "$PACKAGE_NAME" ]; then
-  EXTENSION="tbz"
-elif [ ! "$(basename $PACKAGE_NAME .tar.bz2)" = "$PACKAGE_NAME" ]; then
-  EXTENSION="tar.bz2"
-elif [ ! "$(basename $PACKAGE_NAME .tlz)" = "$PACKAGE_NAME" ]; then
-  EXTENSION="tlz"
-elif [ ! "$(basename $PACKAGE_NAME .tar.lzma)" = "$PACKAGE_NAME" ]; then
-  EXTENSION="tar.lzma"
-elif [ ! "$(basename $PACKAGE_NAME .txz)" = "$PACKAGE_NAME" ]; then
-  EXTENSION="txz"
-elif [ ! "$(basename $PACKAGE_NAME .tar.xz)" = "$PACKAGE_NAME" ]; then
-  EXTENSION="tar.xz"
-else
-  EXTENSION="$(echo $PACKAGE_NAME | rev | cut -f 1 -d . | rev)"
-  echo "ERROR:  Package extension .$EXTENSION is not supported."
+# .tar.compression is also supported, although the resulting "packages" will
+# not be installable by installpkg without the correct 3 letter extension
+# instead.
+case $PACKAGE_NAME in
+*.t[gblx]z|*.tar.[gx]z|*.tar.bz2|*.tar.lzma)
+  EXTENSION=${PACKAGE_NAME##*.} ;;
+
+*.*)
+  echo "ERROR:  Package extension .${PACKAGE_NAME##*.} is not supported."
   exit 1
-fi
+  ;;
+*)
+  echo "ERROR:  Package extension required, $PACKAGE_NAME doesn't have one."
+  exit 1
+esac
 
 TAR_NAME="$(basename $PACKAGE_NAME .$EXTENSION)"
 

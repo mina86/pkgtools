@@ -2,6 +2,7 @@
 # Copyright 1994, 1998, 2000  Patrick Volkerding, Concord, CA, USA
 # Copyright 2001, 2003  Slackware Linux, Inc., Concord, CA, USA
 # Copyright 2007, 2009  Patrick Volkerding, Sebeka, MN, USA
+# Copyright 2015  Michal Nazarewicz <mina86@mina86.com>
 # All rights reserved.
 #
 # Redistribution and use of this script, with or without modification, is
@@ -58,34 +59,12 @@ fi
 # Main loop:
 for PKG in $* ; do
   echo "Exploding package $PKG in current directory:"
-  # Determine extension:
-  packageext="$( echo $PKG | rev | cut -f 1 -d . | rev)"
   # Determine compression utility:
-  case $packageext in
-  'tgz' )
-    packagecompression=gzip
-    ;;
-  'gz' )
-    packagecompression=gzip
-    ;;
-  'tbz' )
-    packagecompression=bzip2
-    ;;
-  'bz2' )
-    packagecompression=bzip2
-    ;;
-  'tlz' )
-    packagecompression=lzma
-    ;;
-  'lzma' )
-    packagecompression=lzma
-    ;;
-  'txz' )
-    packagecompression=xz
-    ;;
-  'xz' )
-    packagecompression=xz
-    ;;
+  case $PKG in
+  *.tgz|*.gz) packagecompression=gzip ;;
+  *.tbz|*.bz2) packagecompression=bzip2 ;;
+  *.tlz|*.lzma) packagecompression=lzma ;;
+  *.txz|*.xz) packagecompression=xz ;;
   esac
   ( umask 000 ; cat $PKG | $packagecompression -dc | $TAR xvf - 2> /dev/null )
   if [ -r install/doinst.sh ]; then

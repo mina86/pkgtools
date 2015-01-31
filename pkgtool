@@ -5,6 +5,7 @@
 # Copyright 2001, 2004  Slackware Linux, Inc.,  Concord, CA  USA
 #    All rights reserved.
 # Copyright 2007, 2009, 2010, 2011, 2013  Patrick Volkerding, Sebeka, MN, USA
+# Copyright 2015  Michal Nazarewicz <mina86@mina86.com>
 #
 # Redistribution and use of this script, with or without modification, is 
 # permitted provided that the following conditions are met:
@@ -24,6 +25,9 @@
 #  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
+# Sat 17 Jan 16:21:32 UTC 2015  mina86
+# pkgbase optimised.
+#
 # Sat Apr 25 21:18:53 UTC 2009
 # Converted to use new pkgbase() function to remove pathname and
 # valid package extensions.
@@ -47,25 +51,11 @@
 # Return a package name that has been stripped of the dirname portion
 # and any of the valid extensions (only):
 pkgbase() {
-  PKGEXT=$(echo $1 | rev | cut -f 1 -d . | rev)
-  case $PKGEXT in
-  'tgz' )
-    PKGRETURN=$(basename $1 .tgz)
-    ;;
-  'tbz' )
-    PKGRETURN=$(basename $1 .tbz)
-    ;;
-  'tlz' )
-    PKGRETURN=$(basename $1 .tlz)
-    ;;
-  'txz' )
-    PKGRETURN=$(basename $1 .txz)
-    ;;
-  *)
-    PKGRETURN=$(basename $1)
-    ;;
+  PKGRETURN=${1##*/}
+  case "$PKGRETURN" in *.t[gblx]z)
+    PKGRETURN=${PKGRETURN%.*}
   esac
-  echo $PKGRETURN
+  echo "$PKGRETURN"
 }
 
 SOURCE_DIR=/var/log/mount
