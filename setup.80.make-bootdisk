@@ -48,7 +48,7 @@ WARNING!  The existing contents of the USB stick will be erased. \n\
  "Create" "Make a USB Linux boot stick" \
  "Skip" "Skip making a USB boot stick" \
  2> $TMP/return
- REPLY=`cat $TMP/return`
+ REPLY=$(cat $TMP/return)
  rm -f $TMP/return
  if [ "$REPLY" = "Create" ]; then
   # Run "rescan-scsi-bus -l" to discover our USB stick if needed:
@@ -218,7 +218,7 @@ one, otherwise select 'Continue' to continue configuring your system." 12 71 2 \
  "Continue" "Continue the configuration (done making boot sticks)" \
  "Create" "Make a spare Linux boot stick in /dev/$STICK" \
  2> $TMP/return
-  REPLY=`cat $TMP/return`
+  REPLY=$(cat $TMP/return)
   rm -f $TMP/return
   if [ "$REPLY" = "Create" ]; then
    continue

@@ -42,7 +42,7 @@ if [ ! -d $TMP ]; then
   chmod 700 $TMP # no need to leave it open
 fi
 
-ROOT_DEVICE="`mount | grep ' on / ' | cut -f 1 -d ' '`"
+ROOT_DEVICE="$(mount | grep ' on / ' | cut -f 1 -d ' ')"
 
 if mount | grep ' on / ' | grep umsdos 1> /dev/null 2> /dev/null ; then
  MOUNT="read-write"
@@ -72,12 +72,12 @@ make_ide() {
     return 0
   fi
   # Must be a partition:
-  if [ "`expr $2 / 64`" = "0" ]; then
+  if [ "$(expr $2 / 64)" = "0" ]; then
     DEV=$3
     NUM=$2
   else
     DEV=$4
-    NUM=`expr $2 - 64`
+    NUM=$(expr $2 - 64)
   fi
   makedev $TMP/lilo/dev/$DEV$NUM $1 $2
 }
@@ -85,8 +85,8 @@ make_ide() {
 # Make SCSI device
 make_scsi() {
   # find drive # 0 - 15
-  DRV=`expr $1 / 16`
-  NUM=`expr $1 % 16`
+  DRV=$(expr $1 / 16)
+  NUM=$(expr $1 % 16)
   if [ "$NUM" = "0" ]; then
     NUM=""
   fi
@@ -128,8 +128,8 @@ make_scsi() {
 if </proc/partitions grep / 1> /dev/null 2> /dev/null ; then # new
   </proc/partitions grep / | while read line ; do
     SMASHED_LINE=$line
-    MAJOR=`echo $SMASHED_LINE | cut -f 1 -d ' '`
-    MINOR=`echo $SMASHED_LINE | cut -f 2 -d ' '`
+    MAJOR=$(echo $SMASHED_LINE | cut -f 1 -d ' ')
+    MINOR=$(echo $SMASHED_LINE | cut -f 2 -d ' ')
     if [ "$MAJOR" = "3" ]; then
       make_ide $MAJOR $MINOR hda hdb
     elif [ "$MAJOR" = "8" ]; then
@@ -147,9 +147,9 @@ if </proc/partitions grep / 1> /dev/null 2> /dev/null ; then # new
 else # old format
   </proc/partitions grep d | while read line ; do
     SMASHED_LINE=$line
-    MAJOR=`echo $SMASHED_LINE | cut -f 1 -d ' '`
-    MINOR=`echo $SMASHED_LINE | cut -f 2 -d ' '`
-    DEVNAME=`echo $SMASHED_LINE | cut -f 4 -d ' '`
+    MAJOR=$(echo $SMASHED_LINE | cut -f 1 -d ' ')
+    MINOR=$(echo $SMASHED_LINE | cut -f 2 -d ' ')
+    DEVNAME=$(echo $SMASHED_LINE | cut -f 4 -d ' ')
     makedev $TMP/lilo/dev/$DEVNAME $MAJOR $MINOR
   done
 fi
@@ -170,13 +170,13 @@ Put the path to the kernel you want to use in the box below.
 
 EOF
 
- dialog --title "CHOOSE KERNEL" --inputbox "`cat $TMP/tmpmsg`" \
+ dialog --title "CHOOSE KERNEL" --inputbox "$(cat $TMP/tmpmsg)" \
  16 72 "/boot/vmlinuz" 2> $TMP/return
  if [ ! $? = 0 ]; then
   exit
  fi
 
- KERNEL="`cat $TMP/return`"
+ KERNEL="$(cat $TMP/return)"
     
  if [ ! -r "$KERNEL" ]; then  
     dialog --title "NOT FOUND!" --msgbox "$KERNEL" 5 60
@@ -226,13 +226,13 @@ Which option would you like?" 12 67 2 \
  if [ ! $? = 0 ]; then
   break;
  fi
- REPLY=`cat $TMP/return`
+ REPLY=$(cat $TMP/return)
  rm -f $TMP/return
  if [ "$REPLY" = "simple" ]; then # make simple bootdisk
   if [ "$KERNEL" = "" ]; then
    choose_kernel
   fi
-  kernel_size=`du -Lk $KERNEL | cut -f1`
+  kernel_size=$(du -Lk $KERNEL | cut -f1)
   if [ "$kernel_size" -gt "1023" ]; then
 cat << EOF > $TMP/tmpmsg
 
@@ -242,7 +242,7 @@ boot standalone on the floppy.  Use the 'syslinux'
 method instead.
  
 EOF
-   dialog --title "KERNEL TOO BIG!" --msgbox "`cat $TMP/tmpmsg`" 10 60
+   dialog --title "KERNEL TOO BIG!" --msgbox "$(cat $TMP/tmpmsg)" 10 60
    continue
   fi
   dialog --title "BOOT DISK CREATION" --backtitle "$KMSG" --yesno \
@@ -362,14 +362,14 @@ EOF
   fi
  elif [ "$REPLY" = "lilo" ]; then # make lilo bootdisk
   DEFAULT_ITEM="exit"
-  if [ ! -x "`type -path lilo`" ]; then
+  if [ ! -x "$(type -path lilo)" ]; then
 cat << EOF > $TMP/tmpmsg
 
 You don't have 'lilo' installed on the system.
 I guess you didn't install the lilo package.
  
 EOF
-   dialog --title "LILO NOT FOUND" --msgbox "`cat $TMP/tmpmsg`" 8 60
+   dialog --title "LILO NOT FOUND" --msgbox "$(cat $TMP/tmpmsg)" 8 60
    continue
   fi
   if [ "$KERNEL" = "" ]; then

@@ -258,7 +258,7 @@ if [ "$MODE" = "warn" ]; then
     if [ -r $TMP/scan$$/install/doinst.sh ]; then
       if <$TMP/scan$$/install/doinst.sh grep ' rm -rf ' 1>/dev/null 2>/dev/null ; then
         <$TMP/scan$$/install/doinst.sh grep ' rm -rf ' > $TMP/scan$$/install/delete
-	for f in `<$TMP/scan$$/install/delete cut -f 3,7 -d ' ' | tr ' ' '/'`; do
+	for f in $(<$TMP/scan$$/install/delete cut -f 3,7 -d ' ' | tr ' ' '/'); do
 	  f="/$f"
 	  if [ -f "$f" -o -L "$f" ]; then
 	    echo "$f"
@@ -270,7 +270,7 @@ if [ "$MODE" = "warn" ]; then
         ( cd $TMP ; rmdir scan$$ ) 2> /dev/null
       fi
     fi
-    for f in `( $packagecompression -dc | $TAR tf - ) < $1 | grep -v 'drwx'`; do
+    for f in $(( $packagecompression -dc | $TAR tf - ) < $1 | grep -v 'drwx'); do
       f="/$f"
       if [ -f "$f" -o -L "$f" ]; then
         echo "$f"
