@@ -47,7 +47,7 @@ Explodes a Slackware compatible software package
 (or any tar+{gzip,bzip2,lzma,xz archive) in the current directory.
 Equivalent to (for each package listed):
 
-  ( umask 000 ; cat package_name | COMPRESSOR -dc | tar xvf package_name )
+  ( umask 000 ; <package_name COMPRESSOR -dc | tar xvf package_name )
 
 Note: This should only be used for debugging or examining packages, not for 
 installing them.  It doesn't execute installation scripts or update the package
@@ -66,7 +66,7 @@ for PKG in $* ; do
   *.tlz|*.lzma) packagecompression=lzma ;;
   *.txz|*.xz) packagecompression=xz ;;
   esac
-  ( umask 000 ; cat $PKG | $packagecompression -dc | $TAR xvf - 2> /dev/null )
+  ( umask 000 ; <$PKG $packagecompression -dc | $TAR xvf - 2> /dev/null )
   if [ -r install/doinst.sh ]; then
     echo
     echo "An installation script was detected in ./install/doinst.sh, but"

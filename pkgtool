@@ -131,7 +131,7 @@ package_name() {
 }
 
 remove_packages() {
- for pkg_name in $(cat $TMP/return | tr -d "\042")
+ for pkg_name in $(<$TMP/return tr -d "\042")
  do
   if [ -r $ADM_DIR/packages/$pkg_name ]; then
    dialog --title "PACKAGE REMOVAL IN PROGRESS" --cr-wrap --infobox \

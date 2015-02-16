@@ -125,8 +125,8 @@ make_scsi() {
   fi
 }
 
-if cat /proc/partitions | grep / 1> /dev/null 2> /dev/null ; then # new
-  cat /proc/partitions | grep / | while read line ; do
+if </proc/partitions grep / 1> /dev/null 2> /dev/null ; then # new
+  </proc/partitions grep / | while read line ; do
     SMASHED_LINE=$line
     MAJOR=`echo $SMASHED_LINE | cut -f 1 -d ' '`
     MINOR=`echo $SMASHED_LINE | cut -f 2 -d ' '`
@@ -145,7 +145,7 @@ if cat /proc/partitions | grep / 1> /dev/null 2> /dev/null ; then # new
     fi
   done
 else # old format
-  cat /proc/partitions | grep d | while read line ; do
+  </proc/partitions grep d | while read line ; do
     SMASHED_LINE=$line
     MAJOR=`echo $SMASHED_LINE | cut -f 1 -d ' '`
     MINOR=`echo $SMASHED_LINE | cut -f 2 -d ' '`

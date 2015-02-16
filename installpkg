@@ -256,9 +256,9 @@ if [ "$MODE" = "warn" ]; then
     esac
     ( cd $TMP/scan$$ ; $packagecompression -dc | $TAR xf - install ) < $1 2> /dev/null 
     if [ -r $TMP/scan$$/install/doinst.sh ]; then
-      if cat $TMP/scan$$/install/doinst.sh | grep ' rm -rf ' 1>/dev/null 2>/dev/null ; then
-        cat $TMP/scan$$/install/doinst.sh | grep ' rm -rf ' > $TMP/scan$$/install/delete
-	for f in `cat $TMP/scan$$/install/delete | cut -f 3,7 -d ' ' | tr ' ' '/'`; do
+      if <$TMP/scan$$/install/doinst.sh grep ' rm -rf ' 1>/dev/null 2>/dev/null ; then
+        <$TMP/scan$$/install/doinst.sh grep ' rm -rf ' > $TMP/scan$$/install/delete
+	for f in `<$TMP/scan$$/install/delete cut -f 3,7 -d ' ' | tr ' ' '/'`; do
 	  f="/$f"
 	  if [ -f "$f" -o -L "$f" ]; then
 	    echo "$f"
@@ -376,7 +376,7 @@ for package in $* ; do
   if [ "$MODE" = "install" ]; then
     echo "Verifying package $(basename $package)."
   fi
-  cat $package | $packagecompression -dc | dd 2> $TMP/tmpsize$$ | $TAR tf - 1> $TMP/tmplist$$ 2> /dev/null
+  <$package $packagecompression -dc | dd 2> $TMP/tmpsize$$ | $TAR tf - 1> $TMP/tmplist$$ 2> /dev/null
   TARERROR=$?
   if [ ! "$TARERROR" = "0" ]; then
     EXITSTATUS=1 # tar file corrupt
@@ -386,7 +386,7 @@ for package in $* ; do
     rm -f $TMP/tmplist$$ $TMP/tmpsize$$
     continue
   fi
-  UNCOMPRESSED="$(expr $(cat $TMP/tmpsize$$ | head -n 1 | cut -f 1 -d +) / 2)"
+  UNCOMPRESSED="$(expr $(<$TMP/tmpsize$$ head -n 1 | cut -f 1 -d +) / 2)"
   if [ $UNCOMPRESSED -lt 1024 ]; then
     UNCOMPRESSED="${UNCOMPRESSED}K"
   elif [ $UNCOMPRESSED -lt 10239 ]; then
@@ -414,12 +414,12 @@ for package in $* ; do
   fi
 
   # Gather package infomation into a temporary file:
-  cat $DESCRIPTION | grep "^$packagebase:" | cut -f 2- -d : | cut -b2- 1> $TMP/tmpmsg$$ 2> /dev/null
+  <$DESCRIPTION grep "^$packagebase:" | cut -f 2- -d : | cut -b2- 1> $TMP/tmpmsg$$ 2> /dev/null
   if [ "$shortname" != "$packagebase" ]; then
-    cat $DESCRIPTION | grep "^$shortname:" | cut -f 2- -d : | cut -b2- 1>> $TMP/tmpmsg$$ 2> /dev/null
+    <$DESCRIPTION grep "^$shortname:" | cut -f 2- -d : | cut -b2- 1>> $TMP/tmpmsg$$ 2> /dev/null
   fi
   # Adjust the length here.  This allows a slack-desc to be any size up to 13 lines instead of fixed at 11.
-  LENGTH=$(cat $TMP/tmpmsg$$ | wc -l)
+  LENGTH=$(<$TMP/tmpmsg$$ wc -l)
   while [ $LENGTH -lt 12 ]; do
     echo >> $TMP/tmpmsg$$
     LENGTH=$(expr $LENGTH + 1)
@@ -453,12 +453,12 @@ EOF
       echo "Installing package $(basename $package) $PMSG:"
     fi
     echo "PACKAGE DESCRIPTION:"
-    cat $DESCRIPTION | grep "^$packagebase:" | uniq | sed "s/^$packagebase:/#/g"
+    <$DESCRIPTION grep "^$packagebase:" | uniq | sed "s/^$packagebase:/#/g"
     if [ "$shortname" != "$packagebase" ]; then
-      cat $DESCRIPTION | grep "^$shortname:" | uniq | sed "s/^$shortname:/#/g"
+      <$DESCRIPTION grep "^$shortname:" | uniq | sed "s/^$shortname:/#/g"
     fi
   elif [ "$MODE" = "terse" ]; then # emit a single description line
-    printf "%-72s %-6s\n" "$(echo $shortname: $(cat $DESCRIPTION | grep "^$packagebase:" | sed "s/^$packagebase: //g" | head -n 1 | tr -d '()' | sed "s/^$packagebase //g" ) | cut -b1-72)" "[${UNCOMPRESSED}]" | cut -b1-80
+    printf "%-72s %-6s\n" "$(echo $shortname: $(<$DESCRIPTION grep "^$packagebase:" | sed "s/^$packagebase: //g" | head -n 1 | tr -d '()' | sed "s/^$packagebase //g" ) | cut -b1-72)" "[${UNCOMPRESSED}]" | cut -b1-80
   elif [ "$MODE" = "infobox" ]; then # install infobox package
     dialog --title "Installing package $shortname $PMSG" --infobox "$(cat $TMP/tmpmsg$$)" 0 0
   elif [ "$MODE" = "menu" -a "$PRIORITY" = "ADD" -a ! "$ALWAYSASK" = "yes" ]; then # ADD overrides menu mode unless -ask was used
@@ -484,7 +484,7 @@ EOF
 
   # Make sure there are no symbolic links sitting in the way of
   # incoming package files:
-  cat $TMP/tmplist$$ | grep -v "/$" | while read file ; do
+  <$TMP/tmplist$$ grep -v "/$" | while read file ; do
     if [ -L "$ROOT/$file" ]; then
       rm -f "$ROOT/$file"
     fi
@@ -501,13 +501,13 @@ EOF
     echo "PACKAGE MD5SUM: $(md5sum $package | cut -f 1 -d ' ')" >> $ADM_DIR/packages/$shortname
   fi
   echo "PACKAGE DESCRIPTION:" >> $ADM_DIR/packages/$shortname
-  cat $DESCRIPTION | grep "^$packagebase:" >> $ADM_DIR/packages/$shortname 2> /dev/null
+  <$DESCRIPTION grep "^$packagebase:" >> $ADM_DIR/packages/$shortname 2> /dev/null
   if [ "$shortname" != "$packagebase" ]; then
-    cat $DESCRIPTION | grep "^$shortname:" >> $ADM_DIR/packages/$shortname 2> /dev/null
+    <$DESCRIPTION grep "^$shortname:" >> $ADM_DIR/packages/$shortname 2> /dev/null
   fi
   echo "FILE LIST:" >> $ADM_DIR/packages/$shortname
   ( cd $ROOT/ ; $packagecompression -dc | $TAR -xlUpvf - ) < $package >> $TMP/$shortname 2> /dev/null
-  if [ "$(cat $TMP/$shortname | grep '^\./' | wc -l | tr -d ' ')" = "1" ]; then
+  if [ "$(<$TMP/$shortname grep '^\./' | wc -l | tr -d ' ')" = "1" ]; then
     # Good.  We have a package that meets the Slackware spec.
     cat $TMP/$shortname >> $ADM_DIR/packages/$shortname
   else
